@@ -1,8 +1,65 @@
 import os
+from api.conf import PASSWORD_HASH_ITERATIONS, PASSWORD_HASH_LENGTH, AES_KEY
+import base64
+from cryptography.exceptions import InvalidKey
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 def hash_password(password):
     """
     Hashes a password using PBKDF2HMAC with SHA256 algorithm and random salt.
+
+    Args:
+        password (str): The password to hash.
+
+    Returns:
+        Dictionary containing the base64 encoded salt and hashed password
+        strings.
     """
     salt = os.urandom(16)
+
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=PASSWORD_HASH_LENGTH,
+        salt=salt,
+        iterations=PASSWORD_HASH_ITERATIONS,
+    )
+
+    password_hash = kdf.derive(password.encode("utf-8"))
+
+    return {
+        "salt": base64.b64encode(salt).decode("utf-8"),
+        "hash": base64.b64encode(password_hash).decode("utf-8"),
+    }
+
+
+def verify_password(password, stored_salt, stored_hash):
+    """
+    Verify a password against stored salt and password hash.
+
+    Args:
+        password: String password to verify.
+        stored_salt: Base64 encoded stored salt string.
+        stored_hash: Base64 encoded stored password hash string.
+
+    Returns:
+        True if password matches stored salt and password hash, otherwise False.
+    """
+
+    # Decode the salt and password hash stored as string.
+    salt = base64.b64decode(stored_salt)
+    password_hash = base64.b64decode(stored_hash)
+
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=PASSWORD_HASH_LENGTH,
+        salt=salt,
+        iterations=PASSWORD_HASH_ITERATIONS,
+    )
+
+    try:
+        kdf.verify(password.encode("utf-8"), password_hash)
+        return True
+    except InvalidKey:
+        return False
