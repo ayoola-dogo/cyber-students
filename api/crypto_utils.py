@@ -85,7 +85,7 @@ def encrypt_personal_data(personal_data):
     aesgcm = AESGCM(AES_KEY)
 
     encrypted_data = aesgcm.encrypt(
-        nonce=nonce, data=personal_data.encode("utf-8")
+        nonce=nonce, data=personal_data.encode("utf-8"), associated_data=None,
     )
 
     return {
