@@ -27,7 +27,8 @@ git clone https://github.com/YOUR_GITHUB_USERNAME/cyber-students.git
 
 ## Setup the Project
 
-Create a Python 3 virtual environment:
+Create a Python 3 virtual environment: <br/>
+use python >= 3.6
 
 ```sh
 python -m venv project-venv

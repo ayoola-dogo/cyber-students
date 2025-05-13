@@ -1,9 +1,13 @@
 import os
+
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
 from api.conf import PASSWORD_HASH_ITERATIONS, PASSWORD_HASH_LENGTH, AES_KEY
 import base64
 from cryptography.exceptions import InvalidKey
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import secrets
 
 
 def hash_password(password):
@@ -63,3 +67,28 @@ def verify_password(password, stored_salt, stored_hash):
         return True
     except InvalidKey:
         return False
+
+
+def encrypt_personal_data(personal_data):
+    """
+    Encrypt personal data using AES-GCM.
+    AES-GCM uses CTR mode (encryption) and Galois Mode (authentication)
+
+    Args:
+        personal_data: String data to encrypt
+    Returns:
+        Dictionary with nonce and encrypted data in base64 encoding
+    """
+
+    # 96-bits nonce
+    nonce = secrets.token_bytes(12)
+    aesgcm = AESGCM(AES_KEY)
+
+    encrypted_data = aesgcm.encrypt(
+        nonce=nonce, data=personal_data.encode("utf-8")
+    )
+
+    return {
+        "nonce": base64.b64encode(nonce).decode("utf-8"),
+        "encrypted_data": base64.b64encode(encrypted_data).decode("utf-8"),
+    }
