@@ -41,44 +41,45 @@ class RegistrationHandler(BaseHandler):
         # Optional Personal Data
         try:
             # full name
-            full_name = body.get("fullName")
+            full_name = body.get('fullName')
             if full_name is not None and (
                 not isinstance(full_name, str) or not full_name.strip()
             ):
-                raise Exception("The full name is invalid")
+                raise Exception('The full name is invalid')
 
             # address
-            address = body.get("address")
+            address = body.get('address')
             if address is not None and (
                 not isinstance(address, str) or not address.strip()
             ):
-                raise Exception("The address is invalid")
+                raise Exception('The address is invalid')
 
             # dob
-            dob = body.get("dateOfBirth")
+            dob = body.get('dateOfBirth')
             if dob is not None and (
                 not isinstance(dob, str) or not dateparser.parse(dob)
             ):
                 raise Exception(
-                    "The date of birth is invalid"
+                    'The date of birth is invalid'
                 )
 
             # Phone number
-            phone_number = body.get("phoneNumber")
+            phone_number = body.get('phoneNumber')
             if phone_number is not None and (
                 not isinstance(phone_number, str) or len(phone_number) < 6
             ):
-                raise Exception("Phone number is invalid or too short")
+                raise Exception('Phone number is invalid or too short')
 
             # disabilities
-            disabilities = body.get("disabilities", [])
+            disabilities = body.get('disabilities', [])
             if disabilities != [] and (
                 not isinstance(disabilities, list) or not all(
                     isinstance(item, str) for item in disabilities
                 )
             ):
                 raise Exception(
-                    "Please provide disabilities as a list of strings")
+                    'Please provide disabilities as a list of strings'
+                )
         except Exception as e:
             self.send_error(400, message=str(e))
             return
@@ -125,7 +126,7 @@ class RegistrationHandler(BaseHandler):
             'password': hashed_password['hash']
         }
 
-        info("Saving user encrypted data to db")
+        info('Saving user encrypted data to db')
 
         yield self.db.users.insert_one(user_data)
 
