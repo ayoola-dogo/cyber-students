@@ -1,8 +1,6 @@
 from api.crypto_utils import (
-    decrypt_personal_data,
     encrypt_personal_data,
     hash_password,
-    verify_password,
 )
 import dateparser
 from json import dumps
@@ -11,6 +9,7 @@ from tornado.escape import json_decode, utf8
 from tornado.gen import coroutine
 
 from .base import BaseHandler
+
 
 class RegistrationHandler(BaseHandler):
 
@@ -104,9 +103,6 @@ class RegistrationHandler(BaseHandler):
             self.send_error(409, message='A user with the given email address already exists!')
             return
 
-        # Hash password
-        hashed_password = hash_password(password)
-
         personal_data = {
             'email': email,
             'displayName': display_name,
@@ -117,12 +113,21 @@ class RegistrationHandler(BaseHandler):
             'disabilities': disabilities,
         }
 
+        # Hash password
+        hashed_password = hash_password(password)
+        # Encrypt personal data
         user_encrypted_data = encrypt_personal_data(dumps(personal_data))
-        user_encrypted_data.update(hashed_password)
 
-        info("Saving encrypted data to db")
+        user_data = {
+            'personal_data': user_encrypted_data['encrypted_data'],
+            'personal_data_iv': user_encrypted_data['nonce'],
+            'salt': hashed_password['salt'],
+            'password': hashed_password['hash']
+        }
 
-        yield self.db.users.insert_one(user_encrypted_data)
+        info("Saving user encrypted data to db")
+
+        yield self.db.users.insert_one(user_data)
 
         self.set_status(200)
         # Return only non-sensitive data
