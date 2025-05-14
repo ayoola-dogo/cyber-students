@@ -4,6 +4,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from api.conf import PASSWORD_HASH_ITERATIONS, PASSWORD_HASH_LENGTH, AES_KEY
 import base64
+import binascii
 from cryptography.exceptions import InvalidKey
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -92,3 +93,40 @@ def encrypt_personal_data(personal_data):
         "nonce": base64.b64encode(nonce).decode("utf-8"),
         "encrypted_data": base64.b64encode(encrypted_data).decode("utf-8"),
     }
+
+
+def decrypt_personal_data(encrypted_obj):
+    """
+    Decrypt personal data using AES-GCM.
+
+    Args:
+        encrypted_obj: Dictionary with nonce and encrypted data strings in
+        base64 encoding
+
+    Returns:
+        Decrypted data as string
+    """
+
+    if (
+            encoded_nonce := encrypted_obj.get("nonce")) and (
+            encoded_data := encrypted_obj.get("encrypted_data")
+    ):
+        try:
+            nonce = base64.b64decode(encoded_nonce, validate=True)
+            encrypted_data = base64.b64decode(
+                encoded_data, validate=True
+            )
+
+            aesgcm = AESGCM(AES_KEY)
+
+            personal_data = aesgcm.decrypt(
+                nonce=nonce,
+                data=encrypted_data,
+                associated_data=None,
+            )
+
+            return personal_data
+
+        except (binascii.Error, ValueError):
+            raise ValueError("Invalid base64 encoded data")
+    return None
