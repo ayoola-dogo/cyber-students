@@ -127,6 +127,9 @@ def decrypt_personal_data(encrypted_obj):
 
             return personal_data
 
-        except (binascii.Error, ValueError):
-            raise ValueError("Invalid base64 encoded data")
+        except (binascii.Error, ValueError) as error:
+            raise ValueError(
+                "Invalid base64 encoded data or failed "
+                "decryption"
+            ) from error
     return None
