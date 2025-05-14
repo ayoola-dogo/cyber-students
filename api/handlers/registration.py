@@ -107,39 +107,22 @@ class RegistrationHandler(BaseHandler):
         # Hash password
         hashed_password = hash_password(password)
 
-        # Encrypt the personal data fields
-        encrypted_email = encrypt_personal_data(email)
-        encrypted_display_name = encrypt_personal_data(display_name)
-        encrypted_full_name = encrypt_personal_data(full_name)
-        encrypted_address = encrypt_personal_data(address)
-        encrypted_dob = encrypt_personal_data(dob)
-        encrypted_phone_number = encrypt_personal_data(phone_number)
-        # Convert disabilities list to JSON string before encrypting
-        disabilities_json = (
-            dumps(disabilities) if len(disabilities) >= 1 else dumps([])
-        )
-        encrypted_disabilities = encrypt_personal_data(disabilities_json)
-
-        user_doc = {
-            "email_iv": encrypted_email["nonce"],
-            "email": encrypted_email["encrypted_data"],
-            "password_salt": hashed_password["salt"],
-            "password": hashed_password["hash"],
-            "displayName_iv": encrypted_display_name["nonce"],
-            "displayName": encrypted_display_name["encrypted_data"],
-            "fullName_iv": encrypted_full_name["nonce"],
-            "fullName": encrypted_full_name["encrypted_data"],
-            "address_iv": encrypted_address["nonce"],
-            "address": encrypted_address["encrypted_data"],
-            "dob_iv": encrypted_dob["nonce"],
-            "dob": encrypted_dob["encrypted_data"],
-            "phoneNumber_iv": encrypted_phone_number["nonce"],
-            "phoneNumber": encrypted_phone_number["encrypted_data"],
-            "disabilities_iv": encrypted_disabilities["nonce"],
-            "disabilities": encrypted_disabilities["encrypted_data"],
+        personal_data = {
+            'email': email,
+            'displayName': display_name,
+            'fullName': full_name,
+            'address': address,
+            'dateOfBirth': dob,
+            'phoneNumber': phone_number,
+            'disabilities': disabilities,
         }
 
-        yield self.db.users.insert_one(user_doc)
+        user_encrypted_data = encrypt_personal_data(dumps(personal_data))
+        user_encrypted_data.update(hashed_password)
+
+        info("Saving encrypted data to db")
+
+        yield self.db.users.insert_one(user_encrypted_data)
 
         self.set_status(200)
         # Return only non-sensitive data
