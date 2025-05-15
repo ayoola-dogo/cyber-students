@@ -105,7 +105,6 @@ class RegistrationHandler(BaseHandler):
             return
 
         personal_data = {
-            'email': email,
             'displayName': display_name,
             'fullName': full_name,
             'address': address,
@@ -119,7 +118,9 @@ class RegistrationHandler(BaseHandler):
         # Encrypt personal data
         user_encrypted_data = encrypt_personal_data(dumps(personal_data))
 
+        # Need the email unencrypted to search for user in db.
         user_data = {
+            'email': email,
             'personal_data': user_encrypted_data['encrypted_data'],
             'personal_data_iv': user_encrypted_data['nonce'],
             'salt': hashed_password['salt'],

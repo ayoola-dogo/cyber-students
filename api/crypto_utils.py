@@ -125,7 +125,7 @@ def decrypt_personal_data(encrypted_obj):
                 associated_data=None,
             )
 
-            return personal_data
+            return personal_data.decode("utf-8")
 
         except (binascii.Error, ValueError) as error:
             raise ValueError(

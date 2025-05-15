@@ -5,6 +5,8 @@ from tornado.gen import coroutine
 from uuid import uuid4
 
 from .base import BaseHandler
+from api.crypto_utils import verify_password
+
 
 class LoginHandler(BaseHandler):
 
@@ -49,17 +51,19 @@ class LoginHandler(BaseHandler):
             self.send_error(400, message='The password is invalid!')
             return
 
-        user = yield self.db.users.find_one({
-          'email': email
-        }, {
-          'password': 1
-        })
+        user = yield self.db.users.find_one(
+            {'email': email},
+            {
+                'salt': 1,
+                'password': 1,
+            }
+        )
 
         if user is None:
             self.send_error(403, message='The email address and password are invalid!')
             return
 
-        if user['password'] != password:
+        if not verify_password(password, user['salt'], user['password']):
             self.send_error(403, message='The email address and password are invalid!')
             return
 

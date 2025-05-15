@@ -3,6 +3,8 @@ from time import mktime
 from tornado.gen import coroutine
 
 from .base import BaseHandler
+from api.crypto_utils import decrypt_personal_data
+
 
 class AuthHandler(BaseHandler):
 
@@ -26,7 +28,8 @@ class AuthHandler(BaseHandler):
             'token': token
         }, {
             'email': 1,
-            'displayName': 1,
+            'personal_data': 1,
+            'personal_data_iv': 1,
             'expiresIn': 1
         })
 
@@ -41,7 +44,17 @@ class AuthHandler(BaseHandler):
             self.send_error(403, message='Your token has expired!')
             return
 
+        # Decrypt user profile details
+        # There will always be displayName for all users. Hence, personal_data
+        # will always have a value.
+        personal_data = decrypt_personal_data(
+            {
+                'nonce': user.get('personal_data_iv'),
+                'encrypted_data': user.get('personal_data')
+            }
+        )
+
         self.current_user = {
             'email': user['email'],
-            'display_name': user['displayName']
+            **personal_data,
         }
