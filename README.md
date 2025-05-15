@@ -291,7 +291,6 @@ for the user:
 ```
 {
     "email": "foo@bar.com",
-    "password": "pass",
     "displayName": "Foo Bar",
     "fullName": "foo bar",
     "address": "156 highway street, London",
