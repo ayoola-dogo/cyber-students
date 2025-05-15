@@ -4,6 +4,7 @@ from tornado.gen import coroutine
 
 from .base import BaseHandler
 from api.crypto_utils import decrypt_personal_data
+from json import loads
 
 
 class AuthHandler(BaseHandler):
@@ -56,5 +57,5 @@ class AuthHandler(BaseHandler):
 
         self.current_user = {
             'email': user['email'],
-            **personal_data,
+            **loads(personal_data),
         }

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from time import mktime
-from tornado.escape import json_decode, utf8
+from tornado.escape import json_decode
 from tornado.gen import coroutine
 from uuid import uuid4
 
