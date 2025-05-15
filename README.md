@@ -219,7 +219,7 @@ is no encryption or password hashing.  If a hacker was to compromise
 the database, they could easily run a similar program to retrieve all
 of the users personal information and passwords.
 
-
+<br/><br/>
 ## Changes Implemented
 
 - **Password Security**: Implemented PBKDF2HMAC with SHA256 for secure 
@@ -246,11 +246,20 @@ of the users personal information and passwords.
 To register a new user:
 
 ```sh
-curl -X POST http://localhost:4000/students/api/registration -d '{"email": 
-"foo@bar.com", "password": "pass", "displayName": "Foo Bar", "fullName": 
-"foo bar", "address": "156 highway street, London", "dateOfBirth": 
-"12-01-1987", "phoneNumber": "12345678", "disabilities": ["Hearing 
-Impairment", "Visual Impairment"]}'
+curl -X POST http://localhost:4000/students/api/registration -d '
+{
+    "email": "foo@bar.com",
+    "password": "pass",
+    "displayName": "Foo Bar",
+    "fullName": "foo bar",
+    "address": "156 highway street, London",
+    "dateOfBirth": "12-01-1987",
+    "phoneNumber": "12345678",
+    "disabilities": [
+        "Hearing Impairment",
+        "Visual Impairment"
+    ]
+}'
 ```
 
 If the registration is successful, it will confirm the email address
@@ -271,8 +280,7 @@ To display a user's profile you need to a token that has not expired.
 Then you can use:
 
 ```sh
-curl -H "X-TOKEN: {Token from login here}" 
-http://localhost:4000/students/api/user
+curl -H "X-TOKEN: {Token from login here}" http://localhost:4000/students/api/user
 ```
 
 Note that this API call does not require the `-X POST` flag.
@@ -281,8 +289,17 @@ If successful, it will return the email address and the display name
 for the user:
 
 ```
-{"email": "foo@bar.com", "displayName": "Foo Bar", "Foo Bar", "fullName": 
-"foo bar", "address": "156 highway street, London", "dateOfBirth": 
-"12-01-1987", "phoneNumber": "12345678", "disabilities": ["Hearing 
-Impairment", "Visual Impairment"]}
+{
+    "email": "foo@bar.com",
+    "password": "pass",
+    "displayName": "Foo Bar",
+    "fullName": "foo bar",
+    "address": "156 highway street, London",
+    "dateOfBirth": "12-01-1987",
+    "phoneNumber": "12345678",
+    "disabilities": [
+        "Hearing Impairment",
+        "Visual Impairment"
+    ]
+}
 ```
