@@ -1,6 +1,6 @@
 from api.crypto_utils import hash_password, encrypt_personal_data
 from json import dumps
-from tornado.escape import json_decode, utf8
+from tornado.escape import json_decode
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
 from tornado.web import Application
@@ -9,15 +9,13 @@ from .base import BaseTest
 
 from api.handlers.login import LoginHandler
 
-import urllib.parse
-
 
 class LoginHandlerTest(BaseTest):
 
     @classmethod
-    def setUpClass(self):
-        self.my_app = Application([(r'/login', LoginHandler)])
-        self.personal_data = {
+    def setUpClass(cls):
+        cls.my_app = Application([(r'/login', LoginHandler)])
+        cls.personal_data = {
             'displayName': 'john_smith',
             'fullName': 'John Smith',
             'address': '435 Highway Street, Maryland',

@@ -1,5 +1,5 @@
+from api.crypto_utils import hash_password, encrypt_personal_data
 from json import dumps
-from tornado.escape import json_decode, utf8
 from tornado.gen import coroutine
 from tornado.httputil import HTTPHeaders
 from tornado.ioloop import IOLoop
@@ -9,21 +9,33 @@ from api.handlers.logout import LogoutHandler
 
 from .base import BaseTest
 
-import urllib.parse
 
 class LogoutHandlerTest(BaseTest):
 
     @classmethod
-    def setUpClass(self):
-        self.my_app = Application([(r'/logout', LogoutHandler)])
+    def setUpClass(cls):
+        cls.my_app = Application([(r'/logout', LogoutHandler)])
+        cls.personal_data = {
+            'displayName': 'john_smith',
+        }
         super().setUpClass()
 
     @coroutine
     def register(self):
+        # Hash the password for testing
+        password_data = hash_password(self.password)
+
+        # Encrypt the display name
+        user_encrypted_data = encrypt_personal_data(
+            dumps(self.personal_data)
+        )
+
         yield self.get_app().db.users.insert_one({
             'email': self.email,
-            'password': self.password,
-            'displayName': 'testDisplayName'
+            'personal_data': user_encrypted_data['encrypted_data'],
+            'personal_data_iv': user_encrypted_data['nonce'],
+            'salt': password_data['salt'],
+            'password': password_data['hash']
         })
 
     @coroutine
@@ -50,6 +62,12 @@ class LogoutHandlerTest(BaseTest):
 
         response = self.fetch('/logout', headers=headers, method='POST', body=dumps(body))
         self.assertEqual(200, response.code)
+
+        # Verify that the token has been cleared after logout
+        user = IOLoop.current().run_sync(
+            lambda: self.get_app().db.users.find_one({"email": self.email})
+        )
+        self.assertIsNone(user.get("token"))
 
     def test_logout_without_token(self):
         body = {}
