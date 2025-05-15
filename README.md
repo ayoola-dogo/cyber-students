@@ -218,3 +218,71 @@ As you can see, all of the information is stored in the clear; there
 is no encryption or password hashing.  If a hacker was to compromise
 the database, they could easily run a similar program to retrieve all
 of the users personal information and passwords.
+
+
+## Changes Implemented
+
+- **Password Security**: Implemented PBKDF2HMAC with SHA256 for secure 
+  password hashing with unique salt per user and 700,000 iterations to 
+  resist brute-force attacks.
+- **Data Encryption**: Applied AES-GCM (256-bit) authenticated encryption 
+  for all personal data fields (name, address, DOB, etc.). It uses the 
+  Galois/Counter Mode for authenticated encryption, by using the counter 
+  mode for encryption with the new Galois mode for authentication.  
+- **Cryptographic Best Practices**: used nonce or unique Initialization 
+  Vector (IV) once to encrypt and decrypt user personal data. 
+- **Secure Architecture**: Refactored data storage layer to safely handle encrypted data and hashed passwords
+- **Validation**: Added comprehensive testing suite to verify security 
+  measures function correctly.
+
+## Features
+
+* **User Registration:** Collects email, password, display name, full name, address, DOB, phone number, and disabilities list.
+* **User Login:** Authenticates users based on email and password, returning a session token.
+* **User Logout:** Invalidates the user's session token.
+* **User Profile:** Retrieves and displays the authenticated user's details (email, display name, full name, address, DOB, phone, disabilities) after decrypting them.
+* **Secure Data Storage:** Implements strong security measures for data at rest.
+
+To register a new user:
+
+```sh
+curl -X POST http://localhost:4000/students/api/registration -d '{"email": 
+"foo@bar.com", "password": "pass", "displayName": "Foo Bar", "fullName": 
+"foo bar", "address": "156 highway street, London", "dateOfBirth": 
+"12-01-1987", "phoneNumber": "12345678", "disabilities": ["Hearing 
+Impairment", "Visual Impairment"]}'
+```
+
+If the registration is successful, it will confirm the email address
+and the display name of the newly registered user:
+
+```
+{"email": "foo@bar.com", "displayName": "Foo Bar"}
+```
+
+If the registration is unsuccessful, for example, if you try to
+register the same user twice, it will return an error message:
+
+```
+{"message": "A user with the given email address already exists!"}
+```
+<br/><br/>
+To display a user's profile you need to a token that has not expired.
+Then you can use:
+
+```sh
+curl -H "X-TOKEN: {Token from login here}" 
+http://localhost:4000/students/api/user
+```
+
+Note that this API call does not require the `-X POST` flag.
+
+If successful, it will return the email address and the display name
+for the user:
+
+```
+{"email": "foo@bar.com", "displayName": "Foo Bar", "Foo Bar", "fullName": 
+"foo bar", "address": "156 highway street, London", "dateOfBirth": 
+"12-01-1987", "phoneNumber": "12345678", "disabilities": ["Hearing 
+Impairment", "Visual Impairment"]}
+```
